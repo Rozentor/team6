@@ -1,5 +1,70 @@
 .root {
     width: 512px;
     height: 512px;
-    background-color: #9a937e;
+    background-color: #9a937e; 
+}
+
+body {
+    background-color: #ded6ae;
+    font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+}
+
+.center {
+    text-align: center;
+}
+
+.fieldWrapper {
+    margin: 0 0;
+    display: inline-block;
+    position: relative;
+    width: 512px;
+}
+
+.field {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .field td {
+        border: none;
+        padding: 0;
+        background-size: cover;
+    }
+
+        .field td:before {
+            content: '';
+            box-sizing: border-box;
+            display: block;
+            margin-top: 100%;
+        }
+
+.movablePart {
+    position: absolute;
+    z-index: 10;
+    background-size: cover;
+    transition-property: left, top, right, bottom;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-in-out;
+}
+
+.wall {
+    background-image: url(./images/bricks2.png);
+}
+
+.box {
+    z-index: -100;
+    background-image: url(./images/package.svg);
+}
+
+.player {
+    background-image: url(./images/unicorn.svg)
+}
+
+.target {
+    background-image: radial-gradient(#9000ff 0, #9000ff 15%, transparent 17%, transparent 100%)
+}
+
+.boxOnTarget {
+    background-image: url(/images/package.svg);
+    filter: brightness(50%);
 }
