@@ -1,6 +1,22 @@
 import React from "react";
 import styles from "./styles.css"
 
+const getMove = function (clickEvent) {
+    if (clickEvent.keyCode === 38 /* up */ || clickEvent.keyCode === 87 /* w */) {
+        return { dx: 0, dy: -1 };
+    }
+    if (clickEvent.keyCode === 39 /* right */ || clickEvent.keyCode === 68 /* d */) {
+        return { dx: 1, dy: 0 };
+    }
+    if (clickEvent.keyCode === 40 /* down */ || clickEvent.keyCode === 83 /* s */) {
+        return { dx: 0, dy: 1 };
+    }
+    if (clickEvent.keyCode === 37 /* left */ || clickEvent.keyCode === 65 /* a */) {
+        return { dx: -1, dy: 0 };
+    }
+    return { dx: 0, dy: 0 };
+};
+
 function getPlayerPosition(map) {
     for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[i].length; j++) {
@@ -23,10 +39,11 @@ export default class Field extends React.Component {
         super(props);
         this.state = {
             map: [],
-            position: { x: 0, y: 0 },
+            playerPosition: { x: 0, y: 0 },
             score: 0,
             scoreUpdateFunc: props.scoreUpdate
         };
+        document.addEventListener('keydown', (e) => this.onKeyPressed(e));
     }
 
     componentDidMount() {
@@ -34,58 +51,62 @@ export default class Field extends React.Component {
             .then(response => response.json())
             .then(maps => {
                 const playerPos = getPlayerPosition(maps);
-                this.setState({ map: maps, position: playerPos });
+                console.log(playerPos);
+                this.setState({ map: maps, playerPosition: playerPos });
             });
         // console.log(this.state.map);
     }
 
-    getElementByType = function(type, i) {
+    getElementByType = function (type, x, y) {
+        if (x === this.state.playerPosition.x && y === this.state.playerPosition.y)
+            return (<td className={styles.player} key={x} />);
         switch (type) {
-        case 0:
-            return (<td key={i}/>);
-        case 1:
-                return (<td className={styles.box} key={i}/>);
-        case 2:
-                return (<td className={styles.wall} key={i}/>);
-        case 3:
-                return (<td className={styles.target} key={i}/>);
-        case 4:
-            return (<div className="movablePart player" key={i}/>);
-        case 5:
-            return (<div className="movablePart boxOnTarget" key={i}/>);
+            case 0:
+                return (<td key={x} />);
+            case 1:
+                return (<td className={styles.box} key={x} />);
+            case 2:
+                return (<td className={styles.wall} key={x} />);
+            case 3:
+                return (<td className={styles.target} key={x} />);
+            case 5:
+                return (<td className={styles.boxOnTarget} key={x} />);
         }
     }
 
-    Move() {
-        const delta = getMove();
-        const futurePlace = { x: position.x + delta.dx, y: position.y + delta.dy };
+    onKeyPressed(clickEvent) {
+        console.log(clickEvent);
+        const delta = getMove(clickEvent);
+        const { playerPosition, score, map } = this.state;
+
+        const futurePlace = { x: playerPosition.x + delta.dx, y: playerPosition.y + delta.dy };
         if (isInsideMap(futurePlace.x, futurePlace.y)) {
-            if (this.map[futurePlace.y, futurePlace.x] === entity.emptyPlace ||
-                this.map[futurePlace.y, futurePlace.x] === entity.store)
-                this.setState({ position: futurePlace });
+            if (map[futurePlace.y][futurePlace.x] === entity.emptyPlace ||
+                map[futurePlace.y][futurePlace.x] === entity.store)
+                this.setState({ playerPosition: futurePlace });
         };
-        if (this.map[futurePlace.y, futurePlace.x] === entity.box) {
+        if (map[futurePlace.y][futurePlace.x] === entity.box) {
             const futureBoxPlace = { x: futurePlace.x + delta.dx, y: futurePlace.y + delta.dy };
-            if (this.map[futureBoxPlace.y, futureBoxPlace.x] === entity.emptyPlace) {
-                const newMap = this.map.copy();
-                newMap[futureBoxPlace.y, futureBoxPlace.x] = entity.box;
-                this.setState({ position: futurePlace, map: newMap });
+            if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.emptyPlace) {
+                const newMap = map.copy();
+                newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.box;
+                this.setState({ playerPosition: futurePlace, map: newMap });
             }
         };
-        if (this.map[futurePlace.y, futurePlace.x] === entity.boxOnStore) {
+        if (map[futurePlace.y][futurePlace.x] === entity.boxOnStore) {
             const futureBoxPlace = { x: futurePlace.x + delta.dx, y: futurePlace.y + delta.dy };
-            if (this.map[futureBoxPlace.y, futureBoxPlace.x] === entity.emptyPlace) {
-                const newMap = this.map.copy();
-                newMap[futureBoxPlace.y, futureBoxPlace.x] = entity.box;
-                newMap[futurePlace.y, futurePlace.x] = entity.store;
-                this.setState({ position: futurePlace, map: newMap });
+            if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.emptyPlace) {
+                const newMap = map.copy();
+                newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.box;
+                newMap[futurePlace.y][futurePlace.x] = entity.store;
+                this.setState({ playerPosition: futurePlace, map: newMap });
             }
         };
-        if (this.map[futureBoxPlace.y, futureBoxPlace.x] === entity.store) {
-            const newMap = this.map.copy();
-            newMap[futureBoxPlace.y, futureBoxPlace.x] = entity.boxOnStore;
-            this.setState({ position: futurePlace, map: newMap, score: score + 10 });
-            this.state.scoreUpdateFunc(this.state.score);
+        if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.store) {
+            const newMap = map.copy();
+            newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.boxOnStore;
+            this.setState({ playerPosition: futurePlace, map: newMap, score: score + 10 });
+            this.state.scoreUpdateFunc(score);
         };
     }
 
@@ -95,26 +116,13 @@ export default class Field extends React.Component {
                 <div className={styles.fieldWrapper}>
                     <table className={styles.field}>
                         <tbody>
-                            {this.state.map.map((raw, i) => <tr key={i}>{(raw.map(this.getElementByType))}</tr>)}
+                            {this.state.map.map((raw, y) =>
+                                <tr key={y}>{raw.map((type, x) => this.getElementByType(type, x, y))}</tr>)}
                         </tbody>
                     </table>
                 </div>
             </div>);
     }
-};
 
-const getMove = function (clickEvent) {
-    if (clickEvent.keyCode === 38 /* up */ || clickEvent.keyCode === 87 /* w */) {
-        return { dx: 0, dy: -1 };
-    }
-    if (clickEvent.keyCode === 39 /* right */ || clickEvent.keyCode === 68 /* d */) {
-        return { dx: 1, dy: 0 };
-    }
-    if (clickEvent.keyCode === 40 /* down */ || clickEvent.keyCode === 83 /* s */) {
-        return { dx: 0, dy: 1 };
-    }
-    if (clickEvent.keyCode === 37 /* left */ || clickEvent.keyCode === 65 /* a */) {
-        return { dx: -1, dy: 0 };
-    }
-    return { dx: 0, dy: 0 };
+
 };
