@@ -5,7 +5,7 @@ public static class DataBase
     public static List<int[,]> Maps;
     static  DataBase()
     {
-        var  testMap = new int[,]
+        var  testMap = new[,]
         {
             {0,0,0,0,0,0,0,0,2},
             {0,4,1,0,0,0,0,0,2},
@@ -18,7 +18,7 @@ public static class DataBase
             {0,3,3,3,0,0,0,0,2}
         };
 
-        var map1 = new int[,]
+        var map1 = new[,]
         {
             {0,0,1,1,0,0,0,0,2},
             {0,4,1,1,0,0,0,0,2},
@@ -31,7 +31,7 @@ public static class DataBase
             {0,3,3,3,3,3,3,0,2}
         };
 
-        var map2 = new int[,]
+        var map2 = new[,]
         {
             {0,0,1,1,0,0,0,0,2},
             {0,4,1,1,0,0,0,0,2},
