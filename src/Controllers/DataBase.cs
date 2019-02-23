@@ -3,19 +3,19 @@ using System.Collections.Generic;
 public static class DataBase
 {
     public static List<int[,]> Maps;
-    static  DataBase()
+    static DataBase()
     {
-        var  testMap = new[,]
+        var testMap = new[,]
         {
-            {0,0,0,0,0,0,0,0,2},
-            {0,4,1,0,0,0,0,0,2},
-            {0,0,1,1,0,0,0,0,2},
-            {0,0,0,0,0,0,0,0,2},
-            {0,0,0,0,0,0,0,0,2},
-            {0,0,0,0,0,0,0,0,2},
-            {0,0,0,0,0,0,0,0,2},
-            {0,0,0,0,0,0,0,0,2},
-            {0,3,3,3,0,0,0,0,2}
+            {2,2,2,2,2,2,2,2,2},
+            {2,2,2,2,0,3,2,2,2},
+            {2,4,1,0,0,0,0,3,2},
+            {2,2,2,2,2,0,0,0,2},
+            {2,3,0,3,2,0,1,1,2},
+            {2,0,0,0,2,3,0,0,2},
+            {2,1,0,0,2,0,0,0,2},
+            {2,1,0,1,0,0,0,3,2},
+            {2,2,2,2,2,2,2,2,2}
         };
 
         var map1 = new[,]
@@ -44,6 +44,6 @@ public static class DataBase
             {0,3,3,3,3,3,3,0,2}
         };
 
-        Maps = new List<int[,]> {testMap,map1,map2};
+        Maps = new List<int[,]> { testMap, map1, map2 };
     }
 }
