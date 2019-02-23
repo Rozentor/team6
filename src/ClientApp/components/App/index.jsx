@@ -1,11 +1,7 @@
 import React from "react";
 import styles from "./styles.css";
 import Field from "../Field";
-import Map from "./map.json";
 
-function ParseMap() {
-    return fetch("http://gamehack6.azurewebsites.net/api/game/id=0").then(response => response.json());
-}
 
 function GetPlayerPosition(map) {
     for (let i = 0; i < map.length; i++) {
@@ -31,38 +27,47 @@ export default class App extends React.Component {
         super();
         this.state = {
             score: 0,
-            map: ParseMap(),
-            position: GetPlayerPosition(map)
+            map: null,
+            position: { x: 0, y: 0 }
         };
     }
 
-    Move(map) {
+    componentDidMount() {
+        fetch("http://gamehack6.azurewebsites.net/api/game/id=0")
+            .then(response => response.json())
+            .then(maps => {
+                let playerPos = GetPlayerPosition(map);
+                this.setState({ map: maps, position: playerPos });
+            });
+    }
+
+    Move() {
         const delta = getMove();
         const futurePlace = { x: position.x + delta.dx, y: position.y + delta.dy };
         if (isInsideMap(futurePlace.x, futurePlace.y)) {
-            if (map[futurePlace.y, futurePlace.x] === entity.emptyPlace ||
-                map[futurePlace.y, futurePlace.x] === entity.store)
+            if (this.map[futurePlace.y, futurePlace.x] === entity.emptyPlace ||
+                this.map[futurePlace.y, futurePlace.x] === entity.store)
                 this.setState({position: futurePlace });
         };
-        if (map[futurePlace.y, futurePlace.x] === entity.box) {
+        if (this.map[futurePlace.y, futurePlace.x] === entity.box) {
             const futureBoxPlace = { x: futurePlace.x + delta.dx, y: futurePlace.y + delta.dy };
-            if (map[futureBoxPlace.y, futureBoxPlace.x] === entity.emptyPlace) {
-                let newMap = map.copy();
+            if (this.map[futureBoxPlace.y, futureBoxPlace.x] === entity.emptyPlace) {
+                let newMap = this.map.copy();
                 newMap[futureBoxPlace.y, futureBoxPlace.x] = entity.box;
                 this.setState({ position: futurePlace, map: newMap});
             }
         };
-        if (map[futurePlace.y, futurePlace.x] === entity.boxOnStore) {
+        if (this.map[futurePlace.y, futurePlace.x] === entity.boxOnStore) {
             const futureBoxPlace = { x: futurePlace.x + delta.dx, y: futurePlace.y + delta.dy };
-            if (map[futureBoxPlace.y, futureBoxPlace.x] === entity.emptyPlace) {
-                let newMap = map.copy();
+            if (this.map[futureBoxPlace.y, futureBoxPlace.x] === entity.emptyPlace) {
+                let newMap = this.map.copy();
                 newMap[futureBoxPlace.y, futureBoxPlace.x] = entity.box;
                 newMap[futurePlace.y, futurePlace.x] = entity.store;
                 this.setState({ position: futurePlace, map: newMap });
             }
         };
-        if (map[futureBoxPlace.y, futureBoxPlace.x] === entity.store) {
-            let newMap = map.copy();
+        if (this.map[futureBoxPlace.y, futureBoxPlace.x] === entity.store) {
+            let newMap = this.map.copy();
             newMap[futureBoxPlace.y, futureBoxPlace.x] = entity.boxOnStore;
             this.setState({ position: futurePlace, map: newMap, score: score + 10 });
         };
