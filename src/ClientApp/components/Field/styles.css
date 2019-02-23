@@ -64,12 +64,6 @@ body {
 }
 
 .boxOnTarget {
-    background-image: url(/images/package.svg);
+    background-image: url(./images/package.svg);
     filter: brightness(50%);
-    position: absolute;
-    z-index: 10;
-    background-size: cover;
-    transition-property: left, top, right, bottom;
-    transition-duration: 0.2s;
-    transition-timing-function: ease-in-out;
 }
