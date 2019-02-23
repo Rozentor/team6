@@ -80,33 +80,44 @@ export default class Field extends React.Component {
         const { playerPosition, score, map } = this.state;
 
         const futurePlace = { x: playerPosition.x + delta.dx, y: playerPosition.y + delta.dy };
+        const futureBoxPlace = { x: futurePlace.x + delta.dx, y: futurePlace.y + delta.dy };
+
         if (isInsideMap(futurePlace.x, futurePlace.y)) {
+
             if (map[futurePlace.y][futurePlace.x] === entity.emptyPlace ||
-                map[futurePlace.y][futurePlace.x] === entity.store)
+                map[futurePlace.y][futurePlace.x] === entity.store) {
                 this.setState({ playerPosition: futurePlace });
+                return;
+            }
+               
+
+            
         };
         if (map[futurePlace.y][futurePlace.x] === entity.box) {
-            const futureBoxPlace = { x: futurePlace.x + delta.dx, y: futurePlace.y + delta.dy };
             if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.emptyPlace) {
-                const newMap = map.copy();
+                const newMap = map.slice();
                 newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.box;
                 this.setState({ playerPosition: futurePlace, map: newMap });
+                return;
             }
+            
         };
         if (map[futurePlace.y][futurePlace.x] === entity.boxOnStore) {
-            const futureBoxPlace = { x: futurePlace.x + delta.dx, y: futurePlace.y + delta.dy };
             if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.emptyPlace) {
-                const newMap = map.copy();
+                const newMap = map.slice();
                 newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.box;
                 newMap[futurePlace.y][futurePlace.x] = entity.store;
                 this.setState({ playerPosition: futurePlace, map: newMap });
+                return;
             }
+
         };
         if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.store) {
-            const newMap = map.copy();
+            const newMap = map.slice();
             newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.boxOnStore;
             this.setState({ playerPosition: futurePlace, map: newMap, score: score + 10 });
             this.state.scoreUpdateFunc(score);
+            return;
         };
     }
 
