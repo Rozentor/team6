@@ -8,6 +8,7 @@ namespace thegame.Controllers
         [HttpGet("score")]
         public IActionResult Score()
         {
+            
             return Ok(50);
         }
     }
