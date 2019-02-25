@@ -11,8 +11,9 @@ function renderApp() {
     // configuration and injects the app into a DOM element.
     ReactDOM.render(
         <AppContainer>
-            <App />
-        </AppContainer>,
+            <App/>
+        </AppContainer>
+        ,
         document.getElementById('react-app')
     );
 }

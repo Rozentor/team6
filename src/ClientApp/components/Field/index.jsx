@@ -28,36 +28,21 @@ function getPlayerPosition(map) {
     }
 }
 
-function isInsideMap(x, y) {
-    return (x <= 8 && x >= 0) && (y <= 8 || y >= 0);
-}
-
 const entity = Object.freeze({ "emptyPlace": 0, "box": 1, "wall": 2, "store": 3, "player": 4, "boxOnStore": 5 });
 
 export default class Field extends React.Component {
     constructor(props) {
         super(props);
+        const playerPos = getPlayerPosition(props.map);
         this.state = {
-            map: [],
-            playerPosition: { x: 0, y: 0 },
-            score: 0,
-            scoreUpdateFunc: props.scoreUpdate
+            map: props.map,
+            playerPosition: playerPos,
+            score: 0
         };
         document.addEventListener('keydown', (e) => this.onKeyPressed(e));
     }
 
-    componentDidMount() {
-        fetch("/api/game/id=0")
-            .then(response => response.json())
-            .then(maps => {
-                const playerPos = getPlayerPosition(maps);
-                console.log(playerPos);
-                this.setState({ map: maps, playerPosition: playerPos });
-            });
-        // console.log(this.state.map);
-    }
-
-    getElementByType = function (type, x, y) {
+    getElementByType(type, x, y) {
         if (x === this.state.playerPosition.x && y === this.state.playerPosition.y)
             return (<td className={styles.player} key={x} />);
         switch (type) {
@@ -75,52 +60,50 @@ export default class Field extends React.Component {
     }
 
     onKeyPressed(clickEvent) {
-        console.log(clickEvent);
         const delta = getMove(clickEvent);
         const { playerPosition, score, map } = this.state;
 
         const futurePlace = { x: playerPosition.x + delta.dx, y: playerPosition.y + delta.dy };
         const futureBoxPlace = { x: futurePlace.x + delta.dx, y: futurePlace.y + delta.dy };
 
-        if (isInsideMap(futurePlace.x, futurePlace.y)) {
-
-            if (map[futurePlace.y][futurePlace.x] === entity.emptyPlace ||
-                map[futurePlace.y][futurePlace.x] === entity.store) {
-                this.setState({ playerPosition: futurePlace });
-                return;
-            }
-               
-
-            
-        };
         if (map[futurePlace.y][futurePlace.x] === entity.box) {
-            if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.emptyPlace || map[futureBoxPlace.y][futureBoxPlace.x] === entity.store ) {
+            if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.emptyPlace
+                || map[futureBoxPlace.y][futureBoxPlace.x] === entity.store) {
                 const newMap = map.slice();
-
                 newMap[futurePlace.y][futurePlace.x] = entity.emptyPlace;
                 if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.store) {
                     newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.boxOnStore;
-                    this.setState({ playerPosition: futurePlace, map: newMap, score: score + 10 });
-                   // this.state.scoreUpdateFunc(score);
+                    const newScore = score + 10;
+                    this.props.scoreUpdate(newScore);
+                    this.setState({ playerPosition: futurePlace, map: newMap, score: newScore });
                 } else {
                     newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.box;
                     this.setState({ playerPosition: futurePlace, map: newMap });
                 }
-                return;
             }
-            
+            return;
         };
         if (map[futurePlace.y][futurePlace.x] === entity.boxOnStore) {
-            if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.emptyPlace) {
+            if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.emptyPlace ||
+                map[futureBoxPlace.y][futureBoxPlace.x] === entity.store) {
                 const newMap = map.slice();
-                newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.box;
-                newMap[futurePlace.y][futurePlace.x] = entity.store;
-                this.setState({ playerPosition: futurePlace, map: newMap });
-                return;
-            }
-
+                let newScore = score;
+                if (map[futureBoxPlace.y][futureBoxPlace.x] === entity.store) {
+                    newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.boxOnStore;
+                    newMap[futurePlace.y][futurePlace.x] = entity.store;
+                } else {
+                    newMap[futureBoxPlace.y][futureBoxPlace.x] = entity.box;
+                    newMap[futurePlace.y][futurePlace.x] = entity.store;
+                    newScore -= 10;
+                }
+                this.props.scoreUpdate(newScore);
+                this.setState({ playerPosition: futurePlace, map: newMap, score: newScore });
+            };
+            return;
         };
-        
+        if (map[futurePlace.y][futurePlace.x] !== entity.wall) {
+            this.setState({ playerPosition: futurePlace });
+        };
     }
 
     render() {
@@ -136,6 +119,4 @@ export default class Field extends React.Component {
                 </div>
             </div>);
     }
-
-
 };

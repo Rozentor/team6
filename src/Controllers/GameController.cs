@@ -6,42 +6,58 @@ namespace thegame.Controllers
     [Route("api/game")]
     public class GameController : Controller
     {
-        [HttpGet("score")]
-        public IActionResult Score()
+        [HttpPost]
+        [Route("maps")]
+        public IActionResult GetMaps([FromBody] User user)
         {
-            
-            return Ok(50);
+            return Ok(
+                DataBase.Maps
+                .Select((arr, i) => "Map " + i)
+                .ToArray());
         }
 
-        [HttpGet("maps")]
-        public IActionResult GetMaps()
-        {
-            return Ok(DataBase.Maps.Select((arr, i) => "Map " + i).ToArray());
-        }
         [HttpHead("{mapId}")]
-        [HttpGet("{mapid}")]
+        [HttpGet("{mapId}")]
         public IActionResult GetMaps(int mapId)
         {
+            System.Console.WriteLine(mapId);
             if (mapId < 0 || mapId >= DataBase.Maps.Count)
-                return NotFound();
+                return NotFound("No maps with id " + mapId);
 
             return Ok(DataBase.Maps[mapId]);
         }
 
         [HttpPost]
-        public IActionResult ScoreState([FromBody] int[,] mapState)
+        [Route("register")]
+        public IActionResult AddUser([FromBody]RegisterInfo user)
         {
-            if (mapState == null || mapState.GetLength(0) != 9 || mapState.GetLength(1) != 9)
-                return BadRequest();
-            for (var y = 0; y < 9; y++)
-            {
-                for (var x = 0; x < 9; x++)
-                {
-                    if (mapState[x, y] == 3)
-                        return Ok(false);
-                }
-            }
-            return Ok(true);
+            if (UsersBase.Contains(user.Name))
+                return BadRequest("This name is alraedy registered");
+
+            var id = UsersBase.AddUser(user.Name, user.Password.GetHashCode());
+
+            return Ok(id);
+        }
+
+        [HttpPost]
+        [Route("authorize")]
+        public IActionResult Authorize([FromBody]RegisterInfo info)
+        {
+            var user = UsersBase.CheckUser(info.Name, info.Password.GetHashCode());
+            if (user == null)
+                return NotFound("Wrong password or name");
+
+            return Ok(user.Id);
+        }
+
+        [HttpPost]
+        [Route("GetScore")]
+        public IActionResult GetScore([FromBody]User user)
+        {
+            var realUser = UsersBase.GetUserById(user.Id);
+            realUser.Score = user.Score;
+
+            return Ok(UsersBase.GetUsersScores(user.Id));
         }
     }
 }
