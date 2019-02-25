@@ -52,12 +52,20 @@ namespace thegame.Controllers
 
         [HttpPost]
         [Route("GetScore")]
-        public IActionResult GetScore([FromBody]User user)
+        public IActionResult GetScore([FromBody]ScoreInfo scoreInfo)
         {
-            var realUser = UsersBase.GetUserById(user.Id);
-            realUser.Score = user.Score;
+            var user = UsersBase.GetUserById(scoreInfo.UserId);
+            user.SetScore(scoreInfo.MapId, scoreInfo.Score);
 
-            return Ok(UsersBase.GetUsersScores(user.Id));
+            return Ok(UsersBase.GetUsersScores(scoreInfo.UserId, scoreInfo.MapId));
         }
+    }
+
+    public class ScoreInfo
+    {
+        public int MapId { get; set; }
+        public int Score { get; set; }
+        public int UserId { get; set; }
+
     }
 }

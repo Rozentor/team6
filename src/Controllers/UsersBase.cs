@@ -18,23 +18,24 @@ public static class UsersBase
         return user.Id;
     }
 
-    public static string[] GetUsersScores(int idOfUser)
+    public static string[] GetUsersScores(int idOfUser, int mapId)
     {
         var user = GetUserById(idOfUser);
 
         var users = UsersBase
                 .Users
-                .OrderByDescending(u => u.Score)
+                .Where(u => u.GetScoreFor(mapId) > -1)
+                .OrderByDescending(u => u.GetScoreFor(mapId))
                 .ToArray();
         var scores = new string[10];
         for (var i = 0; i < 10 && i < users.Length; i++)
         {
-            scores[i] = $"{users[i].Name} : {users[i].Score}";
+            scores[i] = $"{users[i].Name} : {users[i].GetScoreFor(mapId)}";
             if (users[i] == user)
-                scores[i]= "[YOU]" + scores[i];
+                scores[i] = "[YOU]" + scores[i];
         }
-        for(var i= users.Length;i< 10 ;i++)
-             scores[i] = $"- : 0";
+        for (var i = users.Length; i < 10; i++)
+            scores[i] = $"- : 0";
         return scores;
     }
 

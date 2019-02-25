@@ -53,8 +53,8 @@ export default class App extends React.Component {
 
             <div>
                 <input type="button" value="Get results" onClick={() => this.getResults()} />
-                <input type="button" value="Restart" onClick={() => { this.setState({ isMapChoosed: false }); this.loadMap(this.state.choosedMapId); }} />
-                <input type="button" value="Back to maps" onClick={() => this.setState({ isMapChoosed: false })} />
+                <input type="button" value="Restart" onClick={() => { this.returnToMaps(true); }} />
+                <input type="button" value="Back to maps" onClick={() => this.returnToMaps()} />
             </div>
 
             <Field map={this.state.map} scoreUpdate={(newScore) => this.scoreUpdate(newScore)} />
@@ -65,7 +65,7 @@ export default class App extends React.Component {
         <div className={styles.score}>
             <div>
                 Authorize:
-                    <input type="text" id='authorizeName' placeholder="Name..." />
+                <input type="text" id='authorizeName' placeholder="Name..." />
                 <input type="text" id='authorizePass' placeholder="Password..." />
                 <input type="button" value="Confirm" onClick={() => this.authorize()} />
             </div>
@@ -78,6 +78,14 @@ export default class App extends React.Component {
             </div>
         </div>
     );
+
+    returnToMaps(isRestartingMap) {
+        this.sendResults();
+        this.setState({ isMapChoosed: false });
+        if (isRestartingMap) {
+            this.loadMap(this.state.choosedMapId);
+        }
+    }
 
     getMapsContents() {
         if (this.state.maps != null) {
@@ -95,7 +103,7 @@ export default class App extends React.Component {
     loadMap = (id) =>
         fetch(`/api/game/${id}`)
             .then(response => response.json())
-            .then(map => this.setState({ map: map, isMapChoosed: true, choosedMapId: id }));
+            .then(map => this.setState({ map: map, isMapChoosed: true, choosedMapId: id, score: 0, stepCounter: 0 }));
 
     fetchPost(uri, data) {
         return fetch(`/api/game/${uri}`, {
@@ -122,8 +130,12 @@ export default class App extends React.Component {
     }
 
     getResults() {
-        this.fetchPost('GetScore', { "Id": this.state.id, "Score": this.state.score })
+        this.sendResults()
             .then(scores => createScoreTable(scores));
+    };
+
+    sendResults() {
+        return this.fetchPost('GetScore', { "Id": this.state.id, "Score": this.state.score, "MapId": this.state.choosedMapId });
     };
 
     authorize() {
